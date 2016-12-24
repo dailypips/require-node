@@ -1,0 +1,42 @@
+{
+  "name": "require-node",
+  "version": "1.0.3",
+  "description": "A node middleware let browser js code can require node module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "luoshaohua"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "*",
+    "q": "*"
+  },
+  "_id": "require-node@1.0.3",
+  "_shasum": "9e7469fe5666a440e362f383a0a362fb9fa5a3da",
+  "_from": "require-node@*",
+  "_npmVersion": "2.15.9",
+  "_nodeVersion": "4.5.0",
+  "_npmUser": {
+    "name": "luoshaohua",
+    "email": "luoshaohua.cn@gmail.com"
+  },
+  "dist": {
+    "shasum": "9e7469fe5666a440e362f383a0a362fb9fa5a3da",
+    "tarball": "https://registry.npmjs.org/require-node/-/require-node-1.0.3.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "luoshaohua",
+      "email": "luoshaohua.cn@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/require-node-1.0.3.tgz_1482497173846_0.7456988813355565"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/require-node/-/require-node-1.0.3.tgz"
+}
