@@ -24,23 +24,23 @@ var aliasPathDict = {};
 
 function call(req, res, next) {
     _formatReqRes(req, res).then(function () {
-        const urlPath = req.url.split('?', 1)[0];
-        if (aliasPathDict[urlPath]) {
+        const originalUrlPath = req.originalUrl.split('?', 1)[0];
+        if (aliasPathDict[originalUrlPath]) {
             //如下代码for seajs or requirejs loader
             var _browserify = require('./_browserify');
             try {
-                res.status(200).send(_browserify.toCMD('../..' + urlPath, aliasPathDict[urlPath], config));
+                res.status(200).send(_browserify.toCMD('../..' + originalUrlPath, aliasPathDict[originalUrlPath], config));
             }
             catch (err) {
                 console.log(err && err.stack || err);
-                console.log('_browserify err:', urlPath, aliasPathDict[urlPath]);
+                console.log('_browserify err:', originalUrlPath, aliasPathDict[originalUrlPath]);
                 res.status(404).send(err && err.stack);
             }
             return;
         }
-        else if (!req.url.startsWith(config.path || '/require-node')) {
+        else if (!originalUrlPath.startsWith(config.path || '/require-node')) {
             if (next) {
-                config.isDebug && console.log('此请求本中间件不处理:', req.url);
+                config.isDebug && console.log('此请求本中间件不处理:', originalUrlPath);
                 next();
             }
             else {
@@ -65,7 +65,21 @@ function call(req, res, next) {
         var formalParams = getModuleFormalParams(moduleFunction);
 
         return new Promise(function (resolve, reject) {
-            return config.resolve ? config.resolve(req, moduleName, functionName, formalParams) : resolve(true);
+            if (config.resolve) {
+                try {
+                    var ret = config.resolve(req, moduleName, functionName, formalParams);
+                    if (_isObject(ret) && ret.then) {
+                        ret.then(resolve, reject);
+                    } else {
+                        resolve(ret);
+                    }
+                }
+                catch (err) {
+                    reject(err);
+                }
+            } else {
+                resolve(true);
+            }
         }).then(function (canCall) {
             if (!canCall) {
                 throw { statusCode: 403, msg: '没有权限调用此方法:' + moduleName + '.' + functionName };
@@ -151,7 +165,7 @@ function getParams(req) {
         }
     }
     else {
-        var match = (req.path || req.url.split('?', 1)[0].slice((config.path || '/require-node').length)).match(pathPattern);
+        var match = (req.path || req.originalUrl.split('?', 1)[0].slice((config.path || '/require-node').length)).match(pathPattern);
         config.isDebug && console.log('call path match', match);
         if (match) {
             if (req.method === 'POST') {
@@ -232,7 +246,8 @@ function moduleFunctionIsCallback(formalParams) {
 }
 
 function _formatReqRes(req, res) {
-    //console.log('req', req.url, req.body);
+    //console.log('req', req.url, req.originalUrl, req.body);
+    req.originalUrl = req.originalUrl || req.url;
     if (!res.status) res.status = (status) => {
         res.statusCode = status;
         return res;

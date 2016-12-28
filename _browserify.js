@@ -1,13 +1,19 @@
-﻿function toCommonJS(modulePath, moduleName, config) {
+﻿var _qPath;
+function getQPath(params) {
+    _qPath = _qPath || (require('fs').existsSync(require('path').join(__dirname, 'node_modules/q')) ? 'require-node/node_modules/q' : 'q');
+    return _qPath;
+}
+
+function toCommonJS(modulePath, moduleName, config) {
     return 'var _require=require("require-node/_require.js");\n' +
-        'var q=require("require-node/node_modules/q");\n' +
+        'var q=require("' + getQPath() + '");\n' +
         _exportsFunction(modulePath, moduleName, config);
 }
 
 function toCMD(modulePath, moduleName, config) {
     return 'define(function(require,exports,module){\n' +
         'var _require=require("/node_modules/require-node/_require.js");\n' +
-        'var q=require("/node_modules/require-node/node_modules/q/q.js")||window.Q;\n' +
+        'var q=require("/node_modules/' + getQPath() + '/q.js")||window.Q;\n' +
         _exportsFunction(modulePath, moduleName, config) +
         '\n})';
 }
