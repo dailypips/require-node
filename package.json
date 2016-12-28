@@ -1,7 +1,7 @@
 {
   "name": "require-node",
   "version": "1.0.4",
-  "description": "A node middleware let browser js code can require node module",
+  "description": "A node middleware let that browser js code can require node js code which is still running at node server",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

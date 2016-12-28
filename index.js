@@ -11,11 +11,12 @@ var config = {
             $res: res,
             $req: req,
             $session: req && req.session,
-            $origin: req.headers['origin'] || 'http://' + (req.headers['host'] || req.hostname),
-            $hostname: req.hostname,
-            $query: req.query,
             $body: req.body,
-            callback: callback
+            callback: callback,
+
+            $origin: req.headers && (req.headers.origin || 'http://' + (req.headers.host || req.hostname)),
+            $hostname: req.hostname,
+            $query: req.query
         }
     }
 };
@@ -23,9 +24,9 @@ var aliasPathDict = {};
 
 function call(req, res, next) {
     _formatReqRes(req, res).then(function () {
-        //如下if for seajs or requirejs loader
         const urlPath = req.url.split('?', 1)[0];
         if (aliasPathDict[urlPath]) {
+            //如下代码for seajs or requirejs loader
             var _browserify = require('./_browserify');
             try {
                 res.status(200).send(_browserify.toCMD('../..' + urlPath, aliasPathDict[urlPath], config));
@@ -208,8 +209,26 @@ function parseActualParams(params, refParams, req, res, callback) {
     });
 }
 
+var callbackFunctionNames;
 function moduleFunctionIsCallback(formalParams) {
-    return formalParams.length > 0 && formalParams[formalParams.length - 1] === 'callback';
+    if (!callbackFunctionNames) {
+        var callback = {};
+        var _$inject = config._inject({}, {}, callback);
+        var $inject = config.inject ? config.inject({}, {}, callback) : {};
+        callbackFunctionNames = [];
+        for (let key in _$inject) {
+            if (_$inject[key] === callback) {
+                callbackFunctionNames.push(key)
+            }
+        }
+        for (let key in $inject) {
+            if ($inject[key] === callback) {
+                callbackFunctionNames.push(key)
+            }
+        }
+        console.log('callbackFunctionNames:', callbackFunctionNames);
+    }
+    return formalParams.length > 0 && callbackFunctionNames.indexOf(formalParams[formalParams.length - 1]) > -1;
 }
 
 function _formatReqRes(req, res) {

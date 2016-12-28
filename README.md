@@ -1,15 +1,15 @@
 # require-node
-A node middleware let browser js code can require node module
+A node middleware let that browser js code can require node js code which is still running at node server
 
-require-node make you can require back end javascript in front end (for example: Browser), and the back end javascript is still running at the back end, not in Browser.
+require-node: In client(eg: Browser), you can REQUIRE and CALL server side javascript which is still running at server(eg: Node.js).
 
-require-node 让您能在前端（比如：浏览器）require后端javascript代码，而这些后端代码在执行时依然在后端执行，而非浏览器里。
+require-node 让您能在前端（比如：浏览器）require后端javascript代码并调用，而这些后端代码在执行时依然在服务器上执行，而非浏览器里。
 
 ## Installion
 ```
 $ npm install require-node
 ```
-**Note:** if you use require-node with **require.js** or **sea.js**, cann't Global install **(Install without -g parameter)**.
+**Note:** if use require-node with **require.js** or **sea.js**, you cann't install globally. **(Install without -g parameter)**
 
 ## Use
 ```
@@ -243,22 +243,26 @@ For more information about webpack, click [here](https://webpack.github.io/)
 ## Config options
 
 **1. alias: { name: '/path/to/backEnd.js' }**
-> config which back end file can be use in front end
+> Config which back end file can be use in front end.
 
 **2. path: '/require-node'** (default)
-> config which url path to send ajax
+> Config which url path to be use sending ajax.
 
 **3. withCredentials: false** (default)
-> IN CROSS DOMAIN, config XMLHttpRequest object with cookie or not
+> IN CROSS DOMAIN, config XMLHttpRequest object with cookie or not.
 
 **4. isDebug: false** (default)
-> config require-node output log or not
+> Config require-node output log or not.
 
-**5. resolve: function(req, moduleName, functionName, formalParams){ return true/promise }**
+**5. resolve: function(req, moduleName, functionName, formalParams){ return true/promise; }**
 > Sometimes, for security reasons, we will prevent some function calls. For each http request before processing, require-node calls this resolve configuration function, if the return is not true or promise resolve not true, call will be prevent.
 
+**6. inject: functon(req, res, callback){ return {curUser: req.session && req.session.curUser}; }**
+> Use inject config, you can define Custom Injected Services. For more details, please refer to the next section: Inject Service.
 
 ## Inject Service
+**1. Use Default Service**
+
 If your back end function want use variable **$req**、**$res**、**$session**、http **$body**, you can define back end function like this:
 ```
 function say(arg1, arg2, $req, otherArg1, otherArg2){
@@ -268,4 +272,50 @@ exports.say = say
 ```
 require-node will inject variable req to $req.
 
-Like Angular Inject Service Style !!!
+**2. Use Custom Service**
+
+If want define Custom Injected Services, you can config like this(eg: curUser service):
+```
+var middleware = require('require-node')({
+    inject: functon(req, res, callback){
+        return {
+            curUser: req.session && req.session.currentUser, //if you store currentUser in req.session
+            otherService: ...
+        }
+    }
+    alias: ...
+})
+```
+In your back end functon, you can use curUser like this:
+```
+function say(arg1, arg2, curUser, otherArg1, otherArg2){
+    console.log(curUser)
+}
+exports.say = say
+```
+
+**3. Define Callback Name**
+
+By default, I think of your callback style back end function like this:
+```
+functon say(arg1, arg2, ... , callback){
+
+}
+exports.say = say
+```
+If your last formal parameter name is not a "callback", such as "cb", you need config inject:
+```
+var middleware = require('require-node')({
+    inject: functon(req, res, callback){
+        return {
+            //curUser: req.session && req.session.currentUser,
+            cb: callback
+        }
+    }
+    alias: ...
+})
+```
+
+That's all.
+
+Did you find that these services inject like Angular !!!
