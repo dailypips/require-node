@@ -5,6 +5,34 @@ require-node: In client(eg: Browser), you can REQUIRE and CALL server side javas
 
 require-node 让您能在前端（比如：浏览器）require后端javascript代码并调用，而这些后端代码在执行时依然在服务器上执行，而非浏览器里。
 
+For example: A javascript module(test.js) in Node server, you can require and call that in Browser, like this:
+
+比如：您在Node服务器有一个模块test.js，您可以在浏览器中如下引用并调用：
+
+**In Browser code :**
+```
+var test = require('path/to/test.js')
+test.getServerTime(function(result) {
+    console.log('Node server time:', result.nodeServerTime)
+    console.log('MySql server time:', result.mysqlServerTime)
+})
+```
+**In Node server code (test.js) :**
+```
+var mysql = require('mysql')
+function getServerTime(callback) {
+    mysql.query('select now()', function(err, rows){
+        callback(err, {
+            nodeServerTime: new Date(),
+            mysqlServerTime: rows && rows[0]
+        })
+    }) 
+}
+
+exports.getServerTime = getServerTime
+```
+Note: also support Promise.
+
 ## Installion
 ```
 $ npm install require-node

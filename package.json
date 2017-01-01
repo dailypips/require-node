@@ -1,6 +1,6 @@
 {
   "name": "require-node",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A node middleware let that browser js code can require node js code which is still running at node server",
   "main": "index.js",
   "scripts": {
