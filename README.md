@@ -12,7 +12,8 @@ For example: A javascript module(test.js) in Node server, you can require and ca
 **In Browser code :**
 ```
 var test = require('path/to/test.js')
-test.getServerTime(function(result) {
+test.getServerTime(function(err, result) {
+    if(err) return;
     console.log('Node server time:', result.nodeServerTime)
     console.log('MySql server time:', result.mysqlServerTime)
 })
