@@ -39,14 +39,7 @@ function call(req, res, next) {
             return;
         }
         else if (!originalUrlPath.startsWith(config.path || '/require-node')) {
-            if (next) {
-                config.isDebug && console.log('此请求本中间件不处理:', originalUrlPath);
-                next();
-            }
-            else {
-                res.status(404).send('');
-            }
-            return;
+            throw { __promise_break: true };
         }
 
         var params = getParams(req);
@@ -141,11 +134,11 @@ function call(req, res, next) {
             res.status(200).send([err]);
         }
         else {
-            if (err && err.$view) {
+            if (err && err.$view && res.render) {
                 res.render(err.$view, err);
             }
             else {
-                if (err && err.statusCode === 401 && next) {
+                if (next && err && (err.__promise_break === true || err.statusCode === 401)) {
                     next();//middleware/loginCheck中间件会处理要求登录问题
                 }
                 else {
