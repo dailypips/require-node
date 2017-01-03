@@ -106,6 +106,7 @@ define(function (require, exports, module) {
 
     var test = require('../backEnd/test');
 
+    //test.say('luoshaohua', new Date(), functon(err, result){})
     test.say('luoshaohua', new Date())
         .then(function (result) {
             console.log(result)
@@ -113,6 +114,7 @@ define(function (require, exports, module) {
             console.error(err)
         })
 
+    //test.say_callback('luoshaohua', new Date(), functon(err, result){})
     test.say_callback('luoshaohua', new Date())
         .then(function (result) {
             console.log(result)
@@ -120,6 +122,7 @@ define(function (require, exports, module) {
             console.error(err)
         })
 
+    //test.say_promise('luoshaohua', new Date(), functon(err, result){})
     test.say_promise('luoshaohua', new Date())
         .then(function (result) {
             console.log(result)
