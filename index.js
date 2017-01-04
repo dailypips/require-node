@@ -1,7 +1,11 @@
 ﻿'use strict';
 
 //防止此文件被意外require到了前台
-if (typeof window != 'undefined') { var errMsg = '【严重错误】前台代码引入此代码会导致缓慢，因为代码中有require("../.." + modulePath)！！！'; alert(errMsg); throw errMsg; }
+if (typeof window != 'undefined') {
+    var err = new Error('【严重错误】前台代码引入此代码会导致缓慢，因为代码中有require("../.." + modulePath)！！！');
+    alert(err.message);
+    throw err;
+}
 
 var config = {
     alias: {},
@@ -39,7 +43,7 @@ function call(req, res, next) {
             return;
         }
         else if (!originalUrlPath.startsWith(config.path || '/require-node')) {
-            throw { __promise_break: true };
+            throw new Error("__promise_break");
         }
 
         var params = getParams(req);
@@ -48,11 +52,15 @@ function call(req, res, next) {
         var functionName = params[1];
         var moduleInstance = getModuleInstance(moduleName);
         if (!moduleInstance) {
-            throw { statusCode: 404, msg: '没有此模块:' + moduleName + '.' + functionName };
+            var err = new Error('没有此模块:' + moduleName);
+            err.statusCode = 404;
+            throw err;
         }
         var moduleFunction = moduleInstance[functionName];
         if (!moduleFunction) {
-            throw { statusCode: 404, msg: '没有此方法:' + moduleName + '.' + functionName };
+            var err = new Error(moduleName + '没有此方法:' + functionName);
+            err.statusCode = 404;
+            throw err;
         }
         var actualParams = params[2];
         var formalParams = getModuleFormalParams(moduleFunction);
@@ -75,7 +83,9 @@ function call(req, res, next) {
             }
         }).then(function (canCall) {
             if (!canCall) {
-                throw { statusCode: 403, msg: '没有权限调用此方法:' + moduleName + '.' + functionName };
+                var err = new Error('没有权限调用此方法:' + moduleName + '.' + functionName);
+                err.statusCode = 403;
+                throw err;
             }
 
             var isCallback = moduleFunctionIsCallback(formalParams);
@@ -123,6 +133,7 @@ function call(req, res, next) {
         //err的stack属性默认是非枚举类型，改成可枚举，让res.status.send时序列化此属性
         if (err && err.stack) {
             Object.defineProperty(err, 'stack', { value: err.stack, enumerable: true });
+            Object.defineProperty(err, 'message', { value: err.message, enumerable: true });
             config.isDebug && console.log('call err enumerable stack:', err);
         }
 
@@ -138,7 +149,7 @@ function call(req, res, next) {
                 res.render(err.$view, err);
             }
             else {
-                if (next && err && (err.__promise_break === true || err.statusCode === 401)) {
+                if (next && err && (err.message === '__promise_break' || err.statusCode === 401)) {
                     next();//middleware/loginCheck中间件会处理要求登录问题
                 }
                 else {
@@ -158,7 +169,7 @@ function getParams(req) {
         }
     }
     else {
-        var match = (req.path || req.originalUrl.split('?', 1)[0].slice((config.path || '/require-node').length)).match(pathPattern);
+        var match = req.originalUrl.split('?', 1)[0].slice((config.path || '/require-node').length).match(pathPattern);
         config.isDebug && console.log('call path match', match);
         if (match) {
             if (req.method === 'POST') {
@@ -171,7 +182,9 @@ function getParams(req) {
             return [decodeURIComponent(match[1]), decodeURIComponent(match[2]), params];
         }
     }
-    throw { statusCode: 400 };
+    var err = new Error('提取参数错误');
+    err.statusCode = 400;
+    throw err;
 }
 
 function getModuleInstance(moduleName) {
