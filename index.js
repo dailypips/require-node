@@ -43,7 +43,8 @@ function call(req, res, next) {
             return;
         }
         else if (!originalUrlPath.startsWith(config.path || '/require-node')) {
-            throw new Error("__promise_break");
+            //throw new Error("__promise_break");
+            throw { message: "__promise_break" };
         }
 
         var params = getParams(req);
@@ -246,7 +247,7 @@ function moduleFunctionIsCallback(formalParams) {
                 callbackFunctionNames.push(key)
             }
         }
-        console.log('callbackFunctionNames:', callbackFunctionNames);
+        //console.log('callbackFunctionNames:', callbackFunctionNames);
     }
     return formalParams.length > 0 && callbackFunctionNames.indexOf(formalParams[formalParams.length - 1]) > -1;
 }
@@ -254,11 +255,11 @@ function moduleFunctionIsCallback(formalParams) {
 function _formatReqRes(req, res) {
     //console.log('req', req.url, req.originalUrl, req.body);
     req.originalUrl = req.originalUrl || req.url;
-    if (!res.status) res.status = (status) => {
+    if (!res.status) res.status = status => {
         res.statusCode = status;
         return res;
     }
-    if (!res.send) res.send = (data) => {
+    if (!res.send) res.send = data => {
         res.setHeader('Content-Type', 'application/json');
         res.end(typeof data === 'string' ? data : JSON.stringify(data));
     }
@@ -313,7 +314,7 @@ module.exports = function (options) {
         config.alias = {};
         aliasPathDict = {};
     }
-    config.isDebug && console.log('alias', config.alias);
+    config.isDebug && console.log('require-node alias:', config.alias);
     //console.log('aliasPathDict', aliasPathDict)
     return call;
 };
