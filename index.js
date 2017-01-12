@@ -42,7 +42,7 @@ function call(req, res, next) {
             }
             return;
         }
-        else if (!originalUrlPath.startsWith(config.path || '/require-node')) {
+        else if (!req.baseUrl && !originalUrlPath.startsWith(config.path || '/require-node')) {
             //throw new Error("__promise_break");
             throw { message: "__promise_break" };
         }
@@ -170,7 +170,8 @@ function getParams(req) {
         }
     }
     else {
-        var match = req.originalUrl.split('?', 1)[0].slice((config.path || '/require-node').length).match(pathPattern);
+        var urlPath = req.originalUrl.split('?', 1)[0].slice((req.baseUrl || config.path || '/require-node').length)
+        var match = urlPath.match(pathPattern);
         config.isDebug && console.log('call path match', match);
         if (match) {
             if (req.method === 'POST') {
